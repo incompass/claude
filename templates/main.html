@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block title %}Hookah System{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Каталог -->
+    <div id="catalog" class="section p-4">
+        <div class="gradient-bg text-white p-6 rounded-lg mb-6">
+            <h1 class="text-3xl font-bold mb-2 text-center text-main-title">HOOKAH TARGET</h1>
+            <p class="opacity-90 font-medium text-lg text-center text-main-title">Выберите кальян и напитки для идеального вечера</p>
+        </div>
+        
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-center" style="color: var(--primary-color);">Кальяны</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for hookah in hookahs %}
+                <div class="bg-white rounded-xl card-shadow overflow-hidden" data-hookah-id="{{ hookah.id }}">
+                    <!-- Изображение кальяна -->
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="{{ url_for('static', filename='photo/' + hookah.name + '.jpg') }}" 
+                             alt="{{ hookah.name }}" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute top-4 right-4">
+                            <button onclick="toggleFavorite({{ hookah.id }})" class="heart-icon {% if hookah.id in favorites|map(attribute='id')|list %}active{% endif %} text-white bg-black bg-opacity-30 rounded-full p-2">
+                                <i class="fas fa-heart text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Информация о кальяне -->
+                    <div class="p-4">
+                        <h3 class="font-bold text-xl text-gray-800 mb-2">{{ hookah.name }}</h3>
+                        <p class="product-description mb-4">{{ hookah.description }}</p>
+                        
+                        <button onclick="showHookahModal({{ hookah.id }})" class="w-full btn-add-hookah text-white px-6 py-3 rounded-xl font-semibold">
+                            Добавить
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-center" style="color: var(--primary-color);">Напитки</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for drink in drinks %}
+                <div class="bg-white rounded-xl card-shadow p-4 glass-card" data-drink-id="{{ drink.id }}">
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg text-gray-800">{{ drink.name }}</h3>
+                            <p class="font-bold text-2xl" style="color: var(--primary-color);">{{ drink.price }}₽</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="toggleFavorite({{ drink.id }})" class="heart-icon text-gray-400">
+                                <i class="fas fa-heart text-2xl"></i>
+                            </button>
+                            <div class="drink-controls" data-drink-id="{{ drink.id }}">
+                                <button onclick="addDrinkToCart({{ drink.id }})" class="btn-primary text-white px-4 py-2 rounded-full add-drink-btn">
+                                    В корзину
+                                </button>
+                                <div class="quantity-controls hidden flex items-center gap-2 bg-gray-100 rounded-full px-2 py-1">
+                                    <button onclick="updateDrinkInCatalog({{ drink.id }}, -1)" class="text-gray-600 p-1 rounded-full">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="quantity-display px-3 py-1 font-semibold text-gray-800">0</span>
+                                    <button onclick="updateDrinkInCatalog({{ drink.id }}, 1)" class="text-gray-600 p-1 rounded-full">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Избранное -->
+    <div id="favorites" class="section hidden p-4">
+        <h1 class="text-2xl font-bold mb-6" style="color: var(--primary-color);">Избранное</h1>
+        <div id="favorites-content" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Динамически заполняется через JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Корзина -->
+    <div id="cart" class="section hidden p-4">
+        <h1 class="text-2xl font-bold mb-6" style="color: var(--primary-color);">Корзина</h1>
+        
+        <div id="cart-items" class="mb-6">
+            <!-- Динамически заполняется через JavaScript -->
+        </div>
+        
+        <div id="additional-services" class="bg-white p-4 rounded-lg shadow-md mb-6" style="display: none;">
+            <h3 class="font-semibold mb-4 text-gray-800 text-xl">Дополнительные услуги</h3>
+            <div class="space-y-4">
+                <!-- Приготовление кальяна с переключателем -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">🔥</span>
+                        <div>
+                            <span class="font-medium text-gray-800 text-lg font-black">Приготовление кальяна</span>
+                            <p class="text-sm text-gray-600 font-bold">Мастер приготовит кальян для вас</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-pink-600 text-xl">290₽</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="preparation-service" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Дополнительные пачки табака с кнопками + - -->
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🚬</span>
+                            <div>
+                                <span class="font-medium text-gray-800 text-lg font-black">Дополнительные пачки табака</span>
+                                <p class="text-sm text-gray-600 font-bold">По 350₽ за пачку</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600 font-bold">Количество пачек:</span>
+                        <div class="flex items-center gap-2 bg-white rounded-full px-2 py-1 border">
+                            <button onclick="updateTobaccoQuantity(-1)" class="text-gray-600 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span id="tobacco-quantity" class="px-3 py-1 font-semibold text-gray-800 min-w-[2rem] text-center">0</span>
+                            <button onclick="updateTobaccoQuantity(1)" class="text-gray-600 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-right mt-2">
+                        <span class="font-bold text-pink-600 text-xl" id="tobacco-total">0₽</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <div class="flex justify-between items-center text-2xl font-bold">
+                <span style="color: var(--primary-color);">Итого:</span>
+                <span id="cart-total" style="color: var(--primary-color);">0₽</span>
+            </div>
+        </div>
+        
+        <button onclick="proceedToCheckout()" class="btn-primary text-white w-full py-4 rounded-lg font-semibold text-xl">
+            Оформить заказ
+        </button>
+    </div>
+    
+    <!-- Профиль -->
+    <div id="profile" class="section hidden p-4">
+        <h1 class="text-2xl font-bold mb-6" style="color: var(--primary-color);">Профиль</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4" style="color: var(--primary-color);">Личные данные</h2>
+            <div class="space-y-2">
+                <p class="font-bold"><strong>Имя:</strong> {{ user_info.first_name }}</p>
+                <p class="font-bold"><strong>Фамилия:</strong> {{ user_info.last_name }}</p>
+                {% if user_info.middle_name %}
+                <p class="font-bold"><strong>Отчество:</strong> {{ user_info.middle_name }}</p>
+                {% endif %}
+                <p class="font-bold"><strong>Телефон:</strong> {{ user_info.phone }}</p>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold" style="color: var(--primary-color);">Мои адреса</h2>
+                <button onclick="showModal('address-modal')" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-black">
+                    Добавить
+                </button>
+            </div>
+            <div id="addresses-list" class="space-y-2">
+                {% for address in addresses %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded font-bold">
+                    <span>{{ address.address }}</span>
+                    <button onclick="deleteAddress({{ address.id }})" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash text-xl"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-lg font-semibold mb-4">Мои заказы</h2>
+            <div id="orders-list">
+                <!-- Динамически заполняется через JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для выбора кальяна -->
+<div id="hookah-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Выбор кальяна</h2>
+            <button onclick="hideModal('hookah-modal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="hookah-details">
+            <!-- Динамически заполняется через JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления адреса -->
+<div id="address-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Добавить адрес</h2>
+            <button onclick="hideModal('address-modal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form onsubmit="addAddress(event)">
+            <input type="text" id="new-address" placeholder="Введите адрес" class="w-full p-3 border rounded-lg mb-4" required>
+            <button type="submit" class="btn-primary text-white w-full py-3 rounded-lg">
+                Добавить
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно оформления заказа -->
+<div id="checkout-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Оформление заказа</h2>
+            <button onclick="hideModal('checkout-modal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form onsubmit="submitOrder(event)">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Дата доставки</label>
+                    <input type="date" id="delivery-date" class="w-full p-3 border rounded-lg" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Время доставки</label>
+                    <input type="time" id="delivery-time" class="w-full p-3 border rounded-lg" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Срок аренды (дни)</label>
+                    <input type="number" id="rental-days" min="1" value="1" class="w-full p-3 border rounded-lg" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Адрес доставки</label>
+                    <select id="delivery-address" class="w-full p-3 border rounded-lg" required>
+                        <option value="">Выберите адрес</option>
+                        {% for address in addresses %}
+                        <option value="{{ address.address }}">{{ address.address }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary text-white w-full py-3 rounded-lg mt-6">
+                Подтвердить заказ
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const hookahs = {{ hookahs | tojson }};
+    const drinks = {{ drinks | tojson }};
+    const fruitPrices = {{ fruit_prices | tojson }};
+    
+    let currentHookah = null;
+    let selectedTariff = null;
+    let selectedFruit = null;
+    
+    function showHookahModal(hookahId) {
+        currentHookah = hookahs.find(h => h.id === hookahId);
+        if (!currentHookah) return;
+        
+        const modalContent = document.getElementById('hookah-details');
+        modalContent.innerHTML = `
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold mb-2">${currentHookah.name}</h3>
+                <p class="text-gray-600 mb-4">${currentHookah.description}</p>
+                
+                <div class="mb-6">
+                    <h4 class="modal-header">Выберите тариф:</h4>
+                    <div class="space-y-2">
+                        <label class="config-option flex items-center" onclick="selectTariffOption('no_tobacco', this)">
+                            <input type="radio" name="tariff" value="no_tobacco" onchange="selectTariff('no_tobacco')">
+                            <div class="flex-1">
+                                <div class="config-title">Без табака</div>
+                                <div class="config-description">кальян, 3 угля, 6 мундштуков, плита</div>
+                            </div>
+                            <div class="config-price">${currentHookah.price_no_tobacco}₽</div>
+                        </label>
+                        <label class="config-option flex items-center" onclick="selectTariffOption('standard', this)">
+                            <input type="radio" name="tariff" value="standard" onchange="selectTariff('standard')">
+                            <div class="flex-1">
+                                <div class="config-title">Стандарт</div>
+                                <div class="config-description">кальян, 6 углей, 6 мундштуков, 1 упаковка табака, плита</div>
+                            </div>
+                            <div class="config-price">${currentHookah.price_standard}₽</div>
+                        </label>
+                        <label class="config-option flex items-center" onclick="selectTariffOption('premium', this)">
+                            <input type="radio" name="tariff" value="premium" onchange="selectTariff('premium')">
+                            <div class="flex-1">
+                                <div class="config-title">Премиум</div>
+                                <div class="config-description">кальян, 12 углей, 6 мундштуков, 2 упаковки табака, плита</div>
+                            </div>
+                            <div class="config-price">${currentHookah.price_premium}₽</div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="modal-header">Фруктовая чаша (опционально):</h4>
+                    <div class="space-y-2">
+                        <label class="config-option flex items-center" onclick="selectFruitOption('none', this)">
+                            <input type="radio" name="fruit" value="" onchange="selectFruit('')">
+                            <div class="flex-1">
+                                <div class="config-title">🚫 Без фрукта</div>
+                            </div>
+                            <div class="config-price">0₽</div>
+                        </label>
+                        <label class="config-option flex items-center" onclick="selectFruitOption('apple', this)">
+                            <input type="radio" name="fruit" value="apple" onchange="selectFruit('apple')">
+                            <div class="flex-1">
+                                <div class="config-title">🍎 Яблоко</div>
+                            </div>
+                            <div class="config-price">+${fruitPrices.apple}₽</div>
+                        </label>
+                        <label class="config-option flex items-center" onclick="selectFruitOption('orange', this)">
+                            <input type="radio" name="fruit" value="orange" onchange="selectFruit('orange')">
+                            <div class="flex-1">
+                                <div class="config-title">🍊 Апельсин</div>
+                            </div>
+                            <div class="config-price">+${fruitPrices.orange}₽</div>
+                        </label>
+                        <label class="config-option flex items-center" onclick="selectFruitOption('grapefruit', this)">
+                            <input type="radio" name="fruit" value="grapefruit" onchange="selectFruit('grapefruit')">
+                            <div class="flex-1">
+                                <div class="config-title">🍋 Грейпфрут</div>
+                            </div>
+                            <div class="config-price">+${fruitPrices.grapefruit}₽</div>
+                        </label>
+                        <label class="config-option flex items-center" onclick="selectFruitOption('pineapple', this)">
+                            <input type="radio" name="fruit" value="pineapple" onchange="selectFruit('pineapple')">
+                            <div class="flex-1">
+                                <div class="config-title">🍍 Ананас</div>
+                            </div>
+                            <div class="config-price">+${fruitPrices.pineapple}₽</div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="total-display">
+                    <div class="text-lg font-semibold">Итого:</div>
+                    <div id="hookah-total" class="total-amount">0₽</div>
+                </div>
+                
+                <button id="add-to-cart-btn" onclick="addHookahToCart()" class="btn-primary w-full py-3 rounded-lg opacity-50 cursor-not-allowed" disabled>
+                    Добавить в корзину
+                </button>
+            </div>
+        `;
+        
+        showModal('hookah-modal');
+    }
+    
+    function selectTariff(tariff) {
+        selectedTariff = tariff;
+        updateHookahTotal();
+        updateAddToCartButton();
+    }
+    
+    function selectTariffOption(tariff, element) {
+        // Убираем выделение со всех тарифов
+        document.querySelectorAll('input[name="tariff"]').forEach(input => {
+            input.closest('.config-option').classList.remove('selected');
+        });
+        // Выделяем выбранный тариф
+        element.classList.add('selected');
+        element.querySelector('input').checked = true;
+        selectTariff(tariff);
+    }
+    
+    function selectFruit(fruit) {
+        selectedFruit = fruit;
+        updateHookahTotal();
+    }
+    
+    function selectFruitOption(fruit, element) {
+        // Убираем выделение со всех фруктов
+        document.querySelectorAll('input[name="fruit"]').forEach(input => {
+            input.closest('.config-option').classList.remove('selected');
+        });
+        // Выделяем выбранный фрукт
+        element.classList.add('selected');
+        element.querySelector('input').checked = true;
+        selectFruit(fruit);
+    }
+    
+    function updateHookahTotal() {
+        if (!currentHookah || !selectedTariff) return;
+        
+        let total = 0;
+        switch(selectedTariff) {
+            case 'no_tobacco':
+                total = currentHookah.price_no_tobacco;
+                break;
+            case 'standard':
+                total = currentHookah.price_standard;
+                break;
+            case 'premium':
+                total = currentHookah.price_premium;
+                break;
+        }
+        
+        if (selectedFruit) {
+            total += fruitPrices[selectedFruit];
+        }
+        
+        document.getElementById('hookah-total').textContent = `${total}₽`;
+    }
+    
+    function updateAddToCartButton() {
+        const btn = document.getElementById('add-to-cart-btn');
+        if (selectedTariff) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+    
+    function addHookahToCart() {
+        if (!currentHookah || !selectedTariff) return;
+        
+        addToCart(currentHookah.id, selectedTariff, selectedFruit);
+        selectedTariff = null;
+        selectedFruit = null;
+    }
+    
+    function addAddress(event) {
+        event.preventDefault();
+        const address = document.getElementById('new-address').value;
+        
+        fetch(`/{{ telegram_id }}/add_address`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address: address })
+        }).then(() => {
+            location.reload();
+        });
+    }
+    
+    function deleteAddress(addressId) {
+        fetch(`/{{ telegram_id }}/delete_address`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address_id: addressId })
+        }).then(() => {
+            location.reload();
+        });
+    }
+    
+    function proceedToCheckout() {
+        showModal('checkout-modal');
+    }
+    
+    function submitOrder(event) {
+        event.preventDefault();
+        
+        const orderData = {
+            delivery_date: document.getElementById('delivery-date').value,
+            delivery_time: document.getElementById('delivery-time').value,
+            rental_days: parseInt(document.getElementById('rental-days').value),
+            address: document.getElementById('delivery-address').value,
+            preparation_service: document.getElementById('preparation-service').checked,
+            additional_tobacco: parseInt(document.getElementById('additional-tobacco').value) || 0
+        };
+        
+        fetch(`/{{ telegram_id }}/create_order`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData)
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = `/{{ telegram_id }}/${data.order_number}`;
+            }
+        });
+    }
+    
+    function loadOrders() {
+        fetch(`/{{ telegram_id }}/orders`)
+            .then(response => response.json())
+            .then(orders => {
+                const ordersList = document.getElementById('orders-list');
+                ordersList.innerHTML = '';
+                
+                orders.forEach(order => {
+                    const orderElement = document.createElement('div');
+                    orderElement.className = 'p-3 border rounded-lg mb-3';
+                    orderElement.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="font-semibold">Заказ #${order.order_number}</div>
+                                <div class="text-sm text-gray-600">${order.delivery_date} в ${order.delivery_time}</div>
+                                <div class="text-sm text-gray-600">Статус: ${order.status}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-semibold text-purple-600">${order.total_price}₽</div>
+                                <a href="/{{ telegram_id }}/${order.order_number}" class="text-blue-500 text-sm">Подробнее</a>
+                            </div>
+                        </div>
+                    `;
+                    ordersList.appendChild(orderElement);
+                });
+            });
+    }
+    
+    function removeFromCart(type, cartId) {
+        fetch(`/{{ telegram_id }}/remove_from_cart`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ type: type, cart_id: cartId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Товар удален из корзины');
+                updateCartDisplay();
+            } else {
+                showNotification('Ошибка при удалении товара', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Ошибка при удалении товара', 'error');
+        });
+    }
+    
+    function updateDrinkQuantity(cartId, newQuantity) {
+        if (newQuantity < 1) {
+            removeFromCart('drink', cartId);
+            return;
+        }
+        
+        fetch(`/{{ telegram_id }}/update_drink_quantity`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ cart_id: cartId, quantity: newQuantity })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateCartDisplay();
+            } else {
+                showNotification('Ошибка при обновлении количества', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Ошибка при обновлении количества', 'error');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadOrders();
+    });
+</script>
+{% endblock %} 

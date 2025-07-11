@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ - Заказ #{{ order.order_number }} - Hookah System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+        .admin-badge {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen p-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- Заголовок админа -->
+            <div class="gradient-bg text-white p-6 rounded-lg mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            <span class="admin-badge text-white px-3 py-1 rounded-full text-sm font-semibold">АДМИН</span>
+                        </div>
+                        <h1 class="text-2xl font-bold mb-2">Заказ #{{ order.order_number }}</h1>
+                        <p class="opacity-90">{{ order.delivery_date }} в {{ order.delivery_time }}</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold">{{ order.total_price }}₽</div>
+                        <div class="text-yellow-200">
+                            <i class="fas fa-circle text-xs mr-1"></i>
+                            {{ order.status }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Информация о клиенте -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-red-600">👤 Данные клиента</h2>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-red-50 rounded-lg">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-user text-red-500 mr-2"></i>
+                                <span class="font-semibold">{{ user_info.last_name }} {{ user_info.first_name }}</span>
+                                {% if user_info.middle_name %}
+                                <span class="font-semibold">{{ user_info.middle_name }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-phone text-red-500 mr-2"></i>
+                                <a href="tel:{{ user_info.phone }}" class="text-red-600 font-semibold hover:underline">
+                                    {{ user_info.phone }}
+                                </a>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fab fa-telegram text-red-500 mr-2"></i>
+                                <span class="text-red-600">ID: {{ telegram_id }}</span>
+                                {% if user_info.username %}
+                                <span class="text-red-600 ml-2">(@{{ user_info.username }})</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h3 class="font-semibold mb-2">📍 Адрес доставки</h3>
+                            <p class="text-gray-700">{{ order.address }}</p>
+                        </div>
+                        
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h3 class="font-semibold mb-2">📅 Детали доставки</h3>
+                            <div class="space-y-1 text-sm">
+                                <p><strong>Дата:</strong> {{ order.delivery_date }}</p>
+                                <p><strong>Время:</strong> {{ order.delivery_time }}</p>
+                                <p><strong>Срок аренды:</strong> {{ order.rental_days }} дн.</p>
+                                <p><strong>Заказ создан:</strong> {{ order.created_at[:16] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Состав заказа -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">📋 Состав заказа</h2>
+                    
+                    <!-- Кальяны -->
+                    <div class="mb-6">
+                        <h3 class="font-semibold mb-3 text-purple-600">🎭 Кальяны</h3>
+                        <div class="space-y-3">
+                            {% for hookah in order.hookahs %}
+                            <div class="border-l-4 border-purple-500 pl-4 bg-purple-50 p-3 rounded-r-lg">
+                                <h4 class="font-semibold">{{ hookah.name }}</h4>
+                                <p class="text-sm text-gray-600">Тариф: {{ hookah.tariff }}</p>
+                                {% if hookah.fruit_bowl %}
+                                <p class="text-sm text-gray-600">Фруктовая чаша: {{ hookah.fruit_bowl }} (+{{ hookah.fruit_price }}₽)</p>
+                                {% endif %}
+                                <p class="font-semibold text-purple-600">
+                                    {{ hookah.price * order.rental_days + hookah.fruit_price }}₽
+                                    {% if order.rental_days > 1 %}
+                                    <span class="text-xs text-gray-500">({{ hookah.price }}₽ × {{ order.rental_days }} дн.)</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Напитки -->
+                    {% if order.drinks %}
+                    <div class="mb-6">
+                        <h3 class="font-semibold mb-3 text-blue-600">🥤 Напитки</h3>
+                        <div class="space-y-2">
+                            {% for drink in order.drinks %}
+                            <div class="flex justify-between items-center bg-blue-50 p-3 rounded-lg">
+                                <div>
+                                    <span class="font-medium">{{ drink.name }}</span>
+                                    <span class="text-gray-600">× {{ drink.quantity }}</span>
+                                </div>
+                                <span class="font-semibold text-blue-600">{{ drink.price * drink.quantity }}₽</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Дополнительные услуги -->
+                    {% if order.preparation_service or order.additional_tobacco > 0 %}
+                    <div class="mb-6">
+                        <h3 class="font-semibold mb-3 text-green-600">✨ Дополнительные услуги</h3>
+                        <div class="space-y-2">
+                            {% if order.preparation_service %}
+                            <div class="flex justify-between items-center bg-green-50 p-3 rounded-lg">
+                                <span>Приготовление кальяна</span>
+                                <span class="font-semibold text-green-600">290₽</span>
+                            </div>
+                            {% endif %}
+                            {% if order.additional_tobacco > 0 %}
+                            <div class="flex justify-between items-center bg-green-50 p-3 rounded-lg">
+                                <span>Дополнительный табак × {{ order.additional_tobacco }}</span>
+                                <span class="font-semibold text-green-600">{{ order.additional_tobacco * 350 }}₽</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Итого -->
+                    <div class="border-t-2 border-gray-200 pt-4">
+                        <div class="flex justify-between items-center text-2xl font-bold">
+                            <span>Итого:</span>
+                            <span class="text-red-600">{{ order.total_price }}₽</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Быстрые действия -->
+            <div class="mt-6 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">🚀 Быстрые действия</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="tel:{{ user_info.phone }}" class="flex items-center justify-center p-4 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">
+                        <i class="fas fa-phone mr-2"></i>
+                        Позвонить клиенту
+                    </a>
+                    <a href="tg://openmessage?user_id={{ telegram_id }}" class="flex items-center justify-center p-4 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+                        <i class="fab fa-telegram mr-2"></i>
+                        Написать в Telegram
+                    </a>
+                    <button onclick="copyOrderInfo()" class="flex items-center justify-center p-4 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors">
+                        <i class="fas fa-copy mr-2"></i>
+                        Скопировать заказ
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Примечания -->
+            <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4 text-yellow-800">📝 Важные примечания</h2>
+                <ul class="space-y-2 text-yellow-700">
+                    <li class="flex items-start">
+                        <i class="fas fa-exclamation-triangle mt-1 mr-2"></i>
+                        <span>Свяжитесь с клиентом для подтверждения заказа и согласования оплаты</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-clock mt-1 mr-2"></i>
+                        <span>Доставка запланирована на {{ order.delivery_date }} в {{ order.delivery_time }}</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-calendar-alt mt-1 mr-2"></i>
+                        <span>Срок аренды: {{ order.rental_days }} дн. (возврат {{ order.delivery_date }})</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyOrderInfo() {
+            const orderText = `
+🔥 НОВЫЙ ЗАКАЗ #{{ order.order_number }}
+
+👤 Клиент: {{ user_info.last_name }} {{ user_info.first_name }}{% if user_info.middle_name %} {{ user_info.middle_name }}{% endif %}
+📞 Телефон: {{ user_info.phone }}
+📍 Адрес: {{ order.address }}
+📅 Дата: {{ order.delivery_date }} в {{ order.delivery_time }}
+⏰ Срок аренды: {{ order.rental_days }} дн.
+
+🎭 КАЛЬЯНЫ:
+{% for hookah in order.hookahs %}• {{ hookah.name }} - {{ hookah.tariff }}{% if hookah.fruit_bowl %} + {{ hookah.fruit_bowl }}{% endif %} ({{ hookah.price * order.rental_days + hookah.fruit_price }}₽)
+{% endfor %}
+{% if order.drinks %}
+🥤 НАПИТКИ:
+{% for drink in order.drinks %}• {{ drink.name }} × {{ drink.quantity }} ({{ drink.price * drink.quantity }}₽)
+{% endfor %}{% endif %}
+{% if order.preparation_service %}
+✨ Приготовление кальяна: 290₽
+{% endif %}{% if order.additional_tobacco > 0 %}
+🍃 Дополнительный табак × {{ order.additional_tobacco }}: {{ order.additional_tobacco * 350 }}₽
+{% endif %}
+
+💰 ИТОГО: {{ order.total_price }}₽
+            `.trim();
+            
+            navigator.clipboard.writeText(orderText).then(() => {
+                alert('Информация о заказе скопирована в буфер обмена!');
+            });
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,451 @@
+:root {
+    --primary-color: #8B5CF6;
+    --primary-light: #A78BFA;
+    --primary-dark: #6D28D9;
+    --secondary-color: #FBBF24;
+    --secondary-light: #FCD34D;
+    --secondary-dark: #F59E0B;
+    --accent-color: #EF4444;
+    --success-color: #10B981;
+    --error-color: #EF4444;
+}
+
+* {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #FFFFFF;
+    min-height: 100vh;
+    font-weight: 500;
+    color: #000000;
+}
+
+.gradient-bg {
+    background: var(--primary-color);
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+}
+
+.card-shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    background: #FFFFFF;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    transition: all 0.2s ease;
+}
+
+.card-shadow:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-color: var(--primary-color);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: #FFFFFF;
+    font-weight: 600;
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-add-hookah {
+    background: var(--primary-color);
+    color: #FFFFFF;
+    font-weight: 600;
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.btn-add-hookah:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-add-hookah:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary:hover {
+    background: var(--secondary-light);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    z-index: 50;
+    box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.1);
+    border-top: 1px solid #E5E7EB;
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    text-decoration: none;
+    color: #6B7280;
+    position: relative;
+    border-radius: 6px;
+    margin: 0.25rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.nav-item.active {
+    background: #F3F4F6;
+    color: var(--primary-color);
+}
+
+.nav-item:hover {
+    background: #F3F4F6;
+    color: var(--primary-color);
+}
+
+.content-container {
+    padding-bottom: 120px;
+}
+
+.heart-icon {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.heart-icon.active {
+    color: var(--accent-color);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #E5E7EB;
+}
+
+.loading-spinner {
+    border: 4px solid var(--secondary-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    color: #000000;
+    font-weight: 700;
+    z-index: 1001;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    background: var(--success-color);
+    color: #FFFFFF;
+}
+
+.notification.error {
+    background: var(--error-color);
+    color: #FFFFFF;
+}
+
+.glass-card {
+    background: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border: 1px solid #E5E7EB;
+}
+
+/* Стили для описаний товаров */
+.product-description {
+    white-space: pre-line;
+    line-height: 1.6;
+    font-size: 0.9rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.product-description-modal {
+    white-space: pre-line;
+    line-height: 1.7;
+    font-size: 1rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+/* Стили для выбора фруктовых чаш */
+.fruit-option {
+    transition: all 0.2s ease;
+    border-width: 3px;
+    border-color: #000000;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+}
+
+.fruit-option:hover {
+    background: #FBBF24;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fruit-option:has(input[type="radio"]:checked) {
+    background: var(--secondary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+}
+
+.fruit-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-color);
+    margin-right: 12px;
+}
+
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+/* Цены */
+.text-pink-600 {
+    color: var(--secondary-color) !important;
+    font-weight: 800;
+    font-size: 1.2em;
+}
+
+/* Элементы формы */
+input, select, textarea {
+    border: 2px solid #E5E7EB !important;
+    border-radius: 8px;
+    font-weight: 600;
+    background: #FFFFFF;
+    transition: border-color 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-color) !important;
+    outline: none;
+}
+
+/* Радиокнопки */
+input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #6B7280;
+    background: #FFFFFF;
+}
+
+input[type="radio"]:checked {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Лейблы */
+label {
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Кнопки напитков */
+.drink-controls button {
+    background: var(--primary-color);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.drink-controls button:hover {
+    background: var(--primary-dark);
+}
+
+/* Количество */
+.quantity-display {
+    background: var(--secondary-color);
+    color: #000000;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+/* Дополнительные услуги */
+#additional-services {
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Фоны */
+.bg-gray-50 {
+    background: #F9FAFB !important;
+    border-radius: 8px;
+}
+
+.bg-white {
+    background: #FFFFFF !important;
+    border-radius: 8px;
+}
+
+/* Текст */
+.text-gray-800 {
+    color: #1F2937 !important;
+    font-weight: 700;
+}
+
+.text-gray-600 {
+    color: #4B5563 !important;
+    font-weight: 600;
+}
+
+.text-main-title {
+    color: #FFFFFF;
+}
+
+/* Официальные стили для конфигурации кальяна */
+.config-option {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.config-option:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.config-option.selected {
+    background: #F3F4F6;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+.config-option input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+    accent-color: var(--primary-color);
+}
+
+.config-price {
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.config-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.config-description {
+    color: #6B7280;
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.modal-header {
+    color: #111827;
+    font-weight: 600;
+    font-size: 1.125rem;
+    margin-bottom: 16px;
+}
+
+.total-display {
+    background: #F9FAFB;
+    color: #111827;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.total-display .total-amount {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+} 
